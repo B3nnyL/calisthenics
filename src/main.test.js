@@ -72,14 +72,11 @@ describe('MainApplication', () => {
       expect(result).toEqual([new Job('高级前端开发', 'ATS')])
     })
 
-    xit('employers should not be able to publish job that is neither JReq nor ATS', () => {
+    it('employers should not be able to publish job that is neither JReq nor ATS', () => {
       const employer = new Employer('招财猫')
       // WTV means WhaTeVer
-      const frontendDeveloperJob = new Job('DevOps', 'WTV')
-
-      expect(() =>
-        application.execute('publish', employer, frontendDeveloperJob)
-      ).toThrow('Job should either be JReq or ATS type.')
+      let frontendDeveloperJob
+      expect(() => frontendDeveloperJob = new Job('DevOps', 'WTV')).toThrow('Job should either be JReq or ATS type.')
     })
   })
 
