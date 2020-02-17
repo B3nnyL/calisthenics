@@ -1,6 +1,7 @@
 import { Application } from './main'
 import Employer from './employer'
 import JobSeeker from './jobSeeker'
+import Job from './job'
 
 describe('MainApplication', () => {
   let application
@@ -11,64 +12,64 @@ describe('MainApplication', () => {
   describe('publish', () => {
     it('employers should be able to publish a job', () => {
       const employer = new Employer('')
-      const job = { name: '高级前端开发' }
+      const job = new Job('高级前端开发')
 
       application.execute('publish', employer, job)
       const result = application.execute('getJobs', employer, null, 'published')
 
-      expect(result).toEqual([{ name: '高级前端开发', type: 'JReq' }])
+      expect(result).toEqual([new Job('高级前端开发')])
     })
 
     it('employers should be only able to see their published jobs', () => {
       const employer1 = new Employer('招财猫')
       const employer2 = new Employer('Sofie')
-      const experiencedFrontendDeveloperJob = { name: '高级前端开发' }
-      const juniorFrontendDeveloperJob = { name: '前端开发' }
+      const experiencedFrontendDeveloperJob = new Job('高级前端开发')
+      const juniorFrontendDeveloperJob = new Job('前端开发')
 
       application.execute('publish', employer1, experiencedFrontendDeveloperJob)
       application.execute('publish', employer2, juniorFrontendDeveloperJob)
 
       expect(
         application.execute('getJobs', employer1, null, 'published')
-      ).toEqual([{ name: '高级前端开发', type: 'JReq' }])
+      ).toEqual([new Job('高级前端开发')])
       expect(
         application.execute('getJobs', employer2, null, 'published')
-      ).toEqual([{ name: '前端开发', type: 'JReq' }])
+      ).toEqual([new Job('前端开发', 'JReq')])
     })
 
     it('employers should be able to publish multiple jobs ', () => {
       const employer = new Employer('招财猫')
-      const experiencedFrontendDeveloperJob = { name: '高级前端开发' }
-      const juniorFrontendDeveloperJob = { name: '前端开发' }
+      const experiencedFrontendDeveloperJob = new Job('高级前端开发')
+      const juniorFrontendDeveloperJob = new Job('前端开发')
 
       application.execute('publish', employer, experiencedFrontendDeveloperJob)
       application.execute('publish', employer, juniorFrontendDeveloperJob)
 
       const result = application.execute('getJobs', employer, null, 'published')
       expect(result).toEqual([
-        { name: '高级前端开发', type: 'JReq' },
-        { name: '前端开发', type: 'JReq' },
+        new Job('高级前端开发'),
+        new Job('前端开发', 'JReq'),
       ])
     })
 
     it('employers should be able to publish a JReq type job', () => {
       const employer = new Employer('招财猫')
-      const frontendDeveloperJob = { name: '高级前端开发', type: 'JReq' }
+      const frontendDeveloperJob = new Job('高级前端开发')
 
       application.execute('publish', employer, frontendDeveloperJob)
 
       const result = application.execute('getJobs', employer, null, 'published')
-      expect(result).toEqual([{ name: '高级前端开发', type: 'JReq' }])
+      expect(result).toEqual([new Job('高级前端开发')])
     })
 
     it('employers should be able to publish a ATS type job', () => {
       const employer = new Employer('招财猫')
-      const frontendDeveloperJob = { name: '高级前端开发', type: 'ATS' }
+      const frontendDeveloperJob = new Job('高级前端开发', 'ATS')
 
       application.execute('publish', employer, frontendDeveloperJob)
 
       const result = application.execute('getJobs', employer, null, 'published')
-      expect(result).toEqual([{ name: '高级前端开发', type: 'ATS' }])
+      expect(result).toEqual([new Job('高级前端开发', 'ATS')])
     })
 
     it('employers should not be able to publish job that is neither JReq nor ATS', () => {
@@ -110,7 +111,7 @@ describe('MainApplication', () => {
       const alibaba = new Employer('Alibaba')
       const tencent = new Employer('Tencent')
       const jobseeker = new JobSeeker('Jacky')
-      const frontendDeveloperJob = { name: '高级前端开发', type: 'ATS' }
+      const frontendDeveloperJob = new Job('高级前端开发', 'ATS')
 
       application.execute('publish', alibaba, frontendDeveloperJob)
       application.execute('publish', tencent, frontendDeveloperJob)
@@ -141,8 +142,8 @@ describe('MainApplication', () => {
     it('job seekers should be able to apply a job that some employer published', () => {
       const jobseeker = new JobSeeker('Jacky')
       const employer = new Employer('ThoughtWorks')
-      const frontendDeveloperJob = { name: '前端开发', type: 'ATS' }
-      const backendDeveloperJob = { name: '后端开发', type: 'ATS' }
+      const frontendDeveloperJob = new Job('前端开发', 'ATS')
+      const backendDeveloperJob = new Job('后端开发', 'ATS')
 
       application.execute('publish', employer, backendDeveloperJob)
       application.execute('publish', employer, frontendDeveloperJob)
@@ -151,15 +152,15 @@ describe('MainApplication', () => {
 
       const result = application.execute('getJobs', jobseeker, null, 'applied')
       expect(result).toMatchObject([
-        { name: '后端开发', type: 'ATS' },
-        { name: '前端开发', type: 'ATS' },
+        new Job('后端开发', 'ATS'),
+        new Job('前端开发', 'ATS'),
       ])
     })
 
     it('job seekers should not be able to apply for a JReq job without a resume', () => {
       const jobseeker = new JobSeeker('Jacky')
       const employer = new Employer('ThoughtWorks')
-      const frontendDeveloperJob = { name: '前端开发', type: 'JReq' }
+      const frontendDeveloperJob = new Job('前端开发', 'JReq')
 
       application.execute('publish', employer, frontendDeveloperJob)
 
@@ -178,7 +179,7 @@ describe('MainApplication', () => {
       const jobseeker = new JobSeeker('Jacky')
       const resume = { name: 'Jacky', skills: ['JavaScript'] }
       const employer = new Employer('ThoughtWorks')
-      const frontendDeveloperJob = { name: '前端开发', type: 'JReq' }
+      const frontendDeveloperJob = new Job('前端开发', 'JReq')
 
       application.execute('publish', employer, frontendDeveloperJob)
       application.execute(
@@ -191,14 +192,14 @@ describe('MainApplication', () => {
       )
 
       const applied = application.execute('getJobs', jobseeker, null, 'applied')
-      expect(applied).toMatchObject([{ name: '前端开发', type: 'JReq' }])
+      expect(applied).toMatchObject([new Job('前端开发', 'JReq')])
     })
 
     it("job seekers should not use someone else's resume to apply for a job", () => {
       const jobseeker = new JobSeeker('Jacky')
       const fakeResume = { name: 'Jack', skills: ['Sales'] }
       const employer = new Employer('ThoughtWorks')
-      const frontendDeveloperJob = { name: '前端开发', type: 'JReq' }
+      const frontendDeveloperJob = new Job('前端开发', 'JReq')
 
       application.execute('publish', employer, frontendDeveloperJob)
 
@@ -222,7 +223,7 @@ describe('MainApplication', () => {
       }
       const backendResume = { name: 'Jacky', skills: ['Java', 'Sprint Boot'] }
       const employer = new Employer('ThoughtWorks')
-      const frontendDeveloperJob = { name: '前端开发', type: 'JReq' }
+      const frontendDeveloperJob = new Job('前端开发', 'JReq')
       const backendDeveloperJob = { name: '后端开发', type: 'JReq' }
 
       application.execute('publish', employer, frontendDeveloperJob)
@@ -267,7 +268,7 @@ describe('MainApplication', () => {
         type: 'ATS',
         employer: 'ThoughtWorks',
       }
-      const backendDeveloperJob = { name: '后端开发', type: 'ATS' }
+      const backendDeveloperJob = new Job('后端开发', 'ATS')
 
       application.execute('publish', employer, backendDeveloperJob)
       application.execute('publish', employer, frontendDeveloperJob)
@@ -289,7 +290,7 @@ describe('MainApplication', () => {
       const jobseeker1 = new JobSeeker('Jacky')
       const jobseeker2 = new JobSeeker('Lam')
       const employer = new Employer('ThoughtWorks')
-      const job = { name: '前端开发', type: 'ATS' }
+      const job = new Job('前端开发', 'ATS')
 
       application.execute('publish', employer, job)
       application.execute('apply', null, job, null, jobseeker1)
@@ -320,10 +321,10 @@ describe('MainApplication', () => {
       const jobseeker1 = new JobSeeker('Jacky')
       const jobseeker2 = new JobSeeker('Lam')
       const thoughtWorks = new Employer('ThoughtWorks')
-      const frontendJob = { name: '前端开发', type: 'ATS' }
+      const frontendJob = new Job('前端开发', 'ATS')
 
       const alibaba = new Employer('ThoughtWorks')
-      const experiencedFrontendJob = { name: '高级前端开发', type: 'ATS' }
+      const experiencedFrontendJob = new Job('高级前端开发', 'ATS')
 
       application.execute('publish', thoughtWorks, frontendJob)
       application.execute('apply', null, frontendJob, null, jobseeker1)
@@ -358,7 +359,7 @@ describe('MainApplication', () => {
 
     it('employers should be able to see job counts applied successfully', () => {
       const alibaba = new Employer('ThoughtWorks')
-      const backendDeveloperJob = { name: '后端开发', type: 'ATS' }
+      const backendDeveloperJob = new Job('后端开发', 'ATS')
       const jobseekerJacky = new JobSeeker('Jacky')
       const jobseekerLam = new JobSeeker('Lam')
 
@@ -397,7 +398,7 @@ describe('MainApplication', () => {
     it.skip('employers should not see applicant counts for a published job given the job is published by other employers', () => {
       const alibaba = new Employer('Alibaba')
       const tencent = new Employer('Tencent')
-      const backendDeveloperJob = { name: '后端开发', type: 'ATS' }
+      const backendDeveloperJob = new Job('后端开发', 'ATS')
       const jobseekerJacky = new JobSeeker('Jacky')
       const jobseekerLam = new JobSeeker('Lam')
 
@@ -488,7 +489,7 @@ describe('MainApplication', () => {
   describe('filter', () => {
     it('employers should be able to filter job seekers by application period for a specific job in desc order', () => {
       const alibaba = new Employer('Alibaba')
-      const job = { name: '高级前端开发', type: 'ATS' }
+      const job = new Job('高级前端开发', 'ATS')
       const jobseeker1 = new JobSeeker('Jacky')
       const jobseeker2 = new JobSeeker('Lam')
       const jobseeker3 = { name: 'Tam', type: 'job-seeker' }
@@ -553,7 +554,7 @@ describe('MainApplication', () => {
 
     it('employers should be able to filter job seekers by application period for a specific job in asc order', () => {
       const alibaba = new Employer('Alibaba')
-      const job = { name: '高级前端开发', type: 'ATS' }
+      const job = new Job('高级前端开发', 'ATS')
       const jobseeker1 = new JobSeeker('Jacky')
       const jobseeker2 = new JobSeeker('Lam')
       const jobseeker3 = { name: 'Tam', type: 'job-seeker' }
@@ -689,7 +690,7 @@ describe('MainApplication', () => {
 
     it('employers should be able to filter job seekers by application time that is requested after a specific time', () => {
       const alibaba = new Employer('Alibaba')
-      const job = { name: '高级前端开发', type: 'ATS' }
+      const job = new Job('高级前端开发', 'ATS')
       const jobseeker1 = new JobSeeker('Jacky')
       const jobseeker2 = new JobSeeker('Lam')
       const jobseeker3 = { name: 'Tam', type: 'job-seeker' }
@@ -759,7 +760,7 @@ describe('MainApplication', () => {
 
     it('employers should be able to filter job seekers by application time that is requested before a specific time', () => {
       const alibaba = new Employer('Alibaba')
-      const job = { name: '高级前端开发', type: 'ATS' }
+      const job = new Job('高级前端开发', 'ATS')
       const jobseeker1 = new JobSeeker('Jacky')
       const jobseeker2 = new JobSeeker('Lam')
       const jobseeker3 = { name: 'Tam', type: 'job-seeker' }
@@ -824,8 +825,8 @@ describe('MainApplication', () => {
 
     it('employers should be able to filter job seekers applied later than a specific time', () => {
       const alibaba = new Employer('Alibaba')
-      const frontendDeveloperJob = { name: '前端开发', type: 'ATS' }
-      const backendDeveloperJob = { name: '后端开发', type: 'ATS' }
+      const frontendDeveloperJob = new Job('前端开发', 'ATS')
+      const backendDeveloperJob = new Job('后端开发', 'ATS')
       const jobseeker1 = new JobSeeker('Jacky')
       const jobseeker2 = new JobSeeker('Lam')
       const jobseeker3 = { name: 'Tam', type: 'job-seeker' }
@@ -891,8 +892,8 @@ describe('MainApplication', () => {
 
     it('employers should be able to filter job seekers applied before a specific time', () => {
       const alibaba = new Employer('Alibaba')
-      const frontendDeveloperJob = { name: '前端开发', type: 'ATS' }
-      const backendDeveloperJob = { name: '后端开发', type: 'ATS' }
+      const frontendDeveloperJob = new Job('前端开发', 'ATS')
+      const backendDeveloperJob = new Job('后端开发', 'ATS')
       const jobseeker1 = new JobSeeker('Jacky')
       const jobseeker2 = new JobSeeker('Lam')
       const jobseeker3 = { name: 'Tam', type: 'job-seeker' }
@@ -963,8 +964,8 @@ describe('MainApplication', () => {
 
     it('employers should be able to filter job seekers applied during a time period', () => {
       const alibaba = new Employer('Alibaba')
-      const frontendDeveloperJob = { name: '前端开发', type: 'ATS' }
-      const backendDeveloperJob = { name: '后端开发', type: 'ATS' }
+      const frontendDeveloperJob = new Job('前端开发', 'ATS')
+      const backendDeveloperJob = new Job('后端开发', 'ATS')
       const jobseeker1 = new JobSeeker('Jacky')
       const jobseeker2 = new JobSeeker('Lam')
       const jobseeker3 = { name: 'Tam', type: 'job-seeker' }
@@ -1030,9 +1031,9 @@ describe('MainApplication', () => {
 
     it('employers should be able to check jobs applied by a job seeker in a given day', () => {
       const alibaba = new Employer('Alibaba')
-      const frontendDeveloperJob = { name: '前端开发', type: 'ATS' }
-      const backendDeveloperJob = { name: '后端开发', type: 'ATS' }
-      const devopsDeveloperJob = { name: 'DevOps', type: 'ATS' }
+      const frontendDeveloperJob = new Job('前端开发', 'ATS')
+      const backendDeveloperJob = new Job('后端开发', 'ATS')
+      const devopsDeveloperJob = new Job('DevOps', 'ATS')
       const jobseeker = new JobSeeker('Jacky')
 
       application.execute('publish', alibaba, frontendDeveloperJob)
@@ -1100,9 +1101,9 @@ describe('MainApplication', () => {
     it('employers should be able to export job applications as csv', () => {
       const alibaba = new Employer('Alibaba')
       const tencent = new Employer('Tencent')
-      const frontendDeveloperJob = { name: '前端开发', type: 'ATS' }
-      const backendDeveloperJob = { name: '后端开发', type: 'ATS' }
-      const devopsDeveloperJob = { name: 'DevOps', type: 'ATS' }
+      const frontendDeveloperJob = new Job('前端开发', 'ATS')
+      const backendDeveloperJob = new Job('后端开发', 'ATS')
+      const devopsDeveloperJob = new Job('DevOps', 'ATS')
       const jobseekerJacky = new JobSeeker('Jacky')
       const jobseekerLam = new JobSeeker('Lam')
 
@@ -1160,9 +1161,9 @@ describe('MainApplication', () => {
     it('employers should be able to export job applications as html', () => {
       const alibaba = new Employer('Alibaba')
       const tencent = new Employer('Tencent')
-      const frontendDeveloperJob = { name: '前端开发', type: 'ATS' }
-      const backendDeveloperJob = { name: '后端开发', type: 'ATS' }
-      const devopsDeveloperJob = { name: 'DevOps', type: 'ATS' }
+      const frontendDeveloperJob = new Job('前端开发', 'ATS')
+      const backendDeveloperJob = new Job('后端开发', 'ATS')
+      const devopsDeveloperJob = new Job('DevOps', 'ATS')
       const jobseekerJacky = new JobSeeker('Jacky')
       const jobseekerLam = new JobSeeker('Lam')
 
