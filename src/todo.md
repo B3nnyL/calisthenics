@@ -1,6 +1,7 @@
 ## domain
-- [ ] employee
-- [ ] job hunter
+- [x] employee
+- [x] job hunter
+- [ ] resume
 - [ ] job board
     - [ ] applicate
     - [ ] publish

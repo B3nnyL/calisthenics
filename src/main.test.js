@@ -2,6 +2,7 @@ import { Application } from './main'
 import Employer from './employer'
 import JobSeeker from './jobSeeker'
 import Job from './job'
+import Resume from './resume'
 
 describe('MainApplication', () => {
   let application
@@ -174,7 +175,7 @@ describe('MainApplication', () => {
 
     it('job seekers should be able to apply for a JReq job with a resume', () => {
       const jobseeker = new JobSeeker('Jacky')
-      const resume = { name: 'Jacky', skills: ['JavaScript'] }
+      const resume = new Resume('Jacky', ['JavaScript'])
       const employer = new Employer('ThoughtWorks')
       const frontendDeveloperJob = new Job('前端开发', 'JReq')
 
@@ -194,7 +195,7 @@ describe('MainApplication', () => {
 
     it("job seekers should not use someone else's resume to apply for a job", () => {
       const jobseeker = new JobSeeker('Jacky')
-      const fakeResume = { name: 'Jack', skills: ['Sales'] }
+      const fakeResume = new Resume('Jack', ['Sales'])
       const employer = new Employer('ThoughtWorks')
       const frontendDeveloperJob = new Job('前端开发', 'JReq')
 
@@ -214,14 +215,13 @@ describe('MainApplication', () => {
 
     it('job seekers should be able to apply for jobs using different resumes', () => {
       const jobseeker = new JobSeeker('Jacky')
-      const frontendResume = {
-        name: 'Jacky',
-        skills: ['JavaScript', 'Angular 8'],
-      }
-      const backendResume = { name: 'Jacky', skills: ['Java', 'Sprint Boot'] }
+      const frontendResume = 
+        new Resume('Jacky', ['JavaScript', 'Angular 8'])
+      
+      const backendResume = new Resume('Jacky',['Java', 'Sprint Boot'])
       const employer = new Employer('ThoughtWorks')
       const frontendDeveloperJob = new Job('前端开发', 'JReq')
-      const backendDeveloperJob = { name: '后端开发', type: 'JReq' }
+      const backendDeveloperJob = new Job('后端开发')
 
       application.execute('publish', employer, frontendDeveloperJob)
       application.execute('publish', employer, backendDeveloperJob)
@@ -435,12 +435,9 @@ describe('MainApplication', () => {
 
     it('employers should be able to see total jobs applied(success and un-success) and unsuccessful applications', () => {
       const alibaba = new Employer('Alibaba')
-      const backendDeveloperJob = { name: '后端开发', type: 'JReq' }
+      const backendDeveloperJob = new Job('后端开发')
       const jobseekerJacky = new JobSeeker('Jacky')
-      const resume = {
-        name: 'Lam',
-        skills: ['JavaScript'],
-      }
+      const resume = new Resume('Lam', ['JavaScript'])
       const jobseekerLam = new JobSeeker('Lam')
 
       application.execute('publish', alibaba, backendDeveloperJob)
